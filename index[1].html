@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sunrise Path Lab</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; background: #f7f9fc; }
+    header { background: #0b5ed7; color: #fff; padding: 20px; text-align: center; }
+    nav { background: #084298; padding: 10px; text-align: center; }
+    nav a { color: #fff; margin: 0 15px; text-decoration: none; font-weight: bold; }
+    section { padding: 40px 20px; max-width: 1100px; margin: auto; }
+    .card { background: #fff; padding: 20px; margin: 15px 0; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .btn { background: #0b5ed7; color: #fff; padding: 10px 20px; border-radius: 5px; text-decoration: none; }
+    footer { background: #0b5ed7; color: #fff; text-align: center; padding: 15px; }
+    form input, form textarea, form select { width: 100%; padding: 10px; margin: 10px 0; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Sunrise Path Lab</h1>
+  <p>Trusted Diagnostic & Pathology Services</p>
+</header>
+
+<nav>
+  <a href="#home">Home</a>
+  <a href="#services">Tests</a>
+  <a href="#offers">Offers</a>
+  <a href="#contact">Contact</a>
+</nav>
+
+<section id="home">
+  <div class="card">
+    <h2>Welcome to Sunrise Path Lab</h2>
+    <p>We provide accurate, affordable and timely pathology test services using modern technology and expert professionals.</p>
+    <a class="btn" href="#contact">Book a Test</a>
+    <a class="btn" href="#contact" style="margin-left:10px;background:#198754;">Book Appointment</a>
+  </div>
+</section>
+
+<section id="services">
+  <h2>Our Popular Tests</h2>
+  <div class="card">Vitamin D + Vitamin B12 Combo Test</div>
+  <div class="card">Complete Blood Count (CBC)</div>
+  <div class="card">Thyroid Profile</div>
+</section>
+
+<section id="offers">
+  <div class="card">
+    <h2>New Year 2026 Special Offer 🎉</h2>
+    <p><strong>Vitamin D + Vitamin B12 Combo</strong></p>
+    <p>MRP: ₹2099 (Combo)</p>
+    <p><strong>Offer Price: ₹849</strong></p>
+  </div>
+</section>
+
+<section id="contact">
+  <h2>Contact Us</h2>
+  <div class="card">
+    <p><strong>Phone:</strong> 9882979757</p>
+    <p><strong>Location:</strong> Sunrise Path Lab</p>
+    <p><strong>Address:</strong> Sunrise Path Lab (as per Google Maps)</p>
+    <p><strong>Working Hours:</strong><br>
+      Monday – Saturday: 7:00 AM – 8:00 PM<br>
+      Sunday: 7:00 AM – 2:00 PM
+    </p>
+    <iframe src="https://www.google.com/maps?q=Sunrise%20Path%20Lab&output=embed" width="100%" height="250" style="border:0;border-radius:8px;" loading="lazy"></iframe>
+    <p style="margin-top:10px;">
+      <a class="btn" href="https://share.google/DXf8qh2niJCMCKD9j" target="_blank">Get Directions</a>
+      <a class="btn" style="background:#25d366;margin-left:10px;" href="https://wa.me/919882979757?text=Please%20share%20Sunrise%20Path%20Lab%20location" target="_blank">Send Location on WhatsApp</a>
+    </p>
+    <form onsubmit="sendAutoReply(event)">
+      <input type="text" placeholder="Your Name" required />
+      <input type="tel" placeholder="Phone Number" required />
+      <select id="testSelect" required onchange="updatePrice()">
+        <option value="">Select Test / Item</option>
+      </select>
+      <input type="text" id="priceField" placeholder="Price (₹)" readonly />
+      <textarea placeholder="Message"></textarea>
+      <button class="btn" type="submit">Send Enquiry</button>
+      <button class="btn" style="background:#20c997;margin-top:10px;" type="button" onclick="generateInvoice(false)">Download Invoice PDF</button>
+    </form>
+  </div>
+</section>
+
+<section id="admin" style="background:#eef2ff;">
+  <h2>Admin Panel (Manage Tests & Prices)</h2>
+  <div class="card">
+    <button class="btn" style="background:#0dcaf0;margin-bottom:10px;" onclick="generateInvoice(true)">Generate Invoice (Admin)</button>
+    <input type="text" id="itemName" placeholder="Test / Item Name" />
+    <input type="number" id="itemPurchase" placeholder="Purchase Rate (₹)" />
+    <input type="number" id="itemPrice" placeholder="Sale Rate (₹)" />
+    <button class="btn" onclick="addItem()">Add / Update Item</button>
+    <hr />
+    <button class="btn" style="background:#6f42c1;" onclick="exportPDF()">Export Items to PDF</button>
+    <input type="file" id="pdfInput" accept="application/pdf" />
+    <button class="btn" style="background:#fd7e14;" onclick="importPDF()">Import Items from PDF</button>
+  </div>
+</section>
+
+<footer>
+  <p>© 2026 Sunrise Path Lab. All Rights Reserved.</p>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+  let tests = JSON.parse(localStorage.getItem('tests')) || {
+    "Vitamin D + Vitamin B12 Combo": { purchase: 500, sale: 849 },
+    "Complete Blood Count (CBC)": { purchase: 200, sale: 400 },
+    "Thyroid Profile": { purchase: 300, sale: 600 }
+  };
+
+  function loadTests() {
+    const select = document.getElementById('testSelect');
+    select.innerHTML = '<option value="">Select Test / Item</option>';
+    for (let test in tests) {
+      const opt = document.createElement('option');
+      opt.value = test;
+      opt.textContent = test;
+      opt.setAttribute('data-price', tests[test].sale);
+      select.appendChild(opt);
+    }
+  }
+
+  function addItem() {
+    const name = document.getElementById('itemName').value;
+    const purchase = document.getElementById('itemPurchase').value;
+    const sale = document.getElementById('itemPrice').value;
+    if (!name || !purchase || !sale) return alert('Enter item name, purchase rate and sale rate');
+    tests[name] = { purchase: purchase, sale: sale };
+    localStorage.setItem('tests', JSON.stringify(tests));
+    loadTests();
+    alert('Item saved successfully');
+    document.getElementById('itemName').value = '';
+    document.getElementById('itemPurchase').value = '';
+    document.getElementById('itemPrice').value = '';
+  }
+
+  function updatePrice() {
+    var select = document.getElementById('testSelect');
+    var test = select.value;
+    if (!test || !tests[test]) {
+      document.getElementById('priceField').value = '';
+      return;
+    }
+    document.getElementById('priceField').value = '₹ ' + tests[test].sale;
+  }
+
+  function sendAutoReply(e) {
+    e.preventDefault();
+    const name = document.querySelector('input[placeholder="Your Name"]').value;
+    const phone = document.querySelector('input[placeholder="Phone Number"]').value;
+    const test = document.getElementById('testSelect').value;
+    const price = document.getElementById('priceField').value;
+    alert('Thank you ' + name + '! Your booking request has been received. We will contact you shortly.');
+    const msg = `Hello ${name}, thank you for contacting Sunrise Path Lab.%0ASelected Test: ${test}%0APrice: ${price}%0AWe will call you shortly for confirmation.`;
+    const whatsappURL = `https://wa.me/91${phone}?text=${msg}`;
+    window.open(whatsappURL, '_blank');
+    generateInvoice(false);
+  }
+
+  function generateInvoice(isAdmin) {
+    const name = document.querySelector('input[placeholder="Your Name"]').value || 'Customer';
+    const phone = document.querySelector('input[placeholder="Phone Number"]').value || '';
+    const test = document.getElementById('testSelect').value || 'N/A';
+    const price = document.getElementById('priceField').value || '';
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text('Sunrise Path Lab', 10, 15);
+    doc.setFontSize(11);
+    doc.text('Diagnostic & Pathology Services', 10, 22);
+    doc.text('Phone: 9882979757', 10, 28);
+    doc.line(10, 32, 200, 32);
+    doc.text(`Invoice Date: ${new Date().toLocaleDateString()}`, 10, 40);
+    doc.text(`Customer Name: ${name}`, 10, 48);
+    if (phone) doc.text(`Phone: ${phone}`, 10, 55);
+    doc.line(10, 60, 200, 60);
+    doc.text('Test / Item', 10, 68);
+    doc.text('Price', 160, 68);
+    doc.line(10, 70, 200, 70);
+    doc.text(test, 10, 80);
+    doc.text(price, 160, 80);
+    doc.line(10, 90, 200, 90);
+    doc.text(`Total: ${price}`, 160, 100);
+    doc.text('Thank you for choosing Sunrise Path Lab', 10, 120);
+    const fileName = isAdmin ? 'admin-invoice.pdf' : 'customer-invoice.pdf';
+    doc.save(fileName);
+  }
+
+  function exportPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.text('Sunrise Path Lab - Test & Price List', 10, 10);
+    let y = 20;
+    for (let test in tests) {
+      doc.text(`${test} : ₹${tests[test].sale}`, 10, y);
+      y += 10;
+    }
+    doc.save('items-price-list.pdf');
+  }
+
+  async function importPDF() {
+    const fileInput = document.getElementById('pdfInput');
+    if (!fileInput.files.length) return alert('Select a PDF file');
+    const file = fileInput.files[0];
+    const text = await file.text();
+    const lines = text.split('\n');
+    lines.forEach(line => {
+      const parts = line.split(':');
+      if (parts.length === 2) {
+        const name = parts[0].trim();
+        const price = parts[1].replace('₹','').trim();
+        if (name && price) tests[name] = { purchase: 0, sale: price };
+      }
+    });
+    localStorage.setItem('tests', JSON.stringify(tests));
+    loadTests();
+    alert('Items imported (basic PDF text format)');
+  }
+
+  window.onload = loadTests;
+</script>
+
+</body>
+</html>
